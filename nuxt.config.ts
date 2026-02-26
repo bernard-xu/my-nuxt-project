@@ -10,8 +10,14 @@ export default defineNuxtConfig({
     '@nuxt/ui'
   ],
 
+  debug: true,
+
   devtools: {
-    enabled: true
+    enabled: true,
+
+    timeline: {
+      enabled: true
+    }
   },
 
   css: ['~/assets/css/main.css'],
