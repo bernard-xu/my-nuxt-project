@@ -14,10 +14,17 @@ export function useAuth() {
 
     /** 初始化：从服务器拉取当前登录用户（仅拉取一次） */
     async function init() {
-        if (initialized.value) return
+        // 服务端每次请求都需要重新验证 Cookie，不能使用模块级缓存
+        // （模块实例在服务端是跨请求共享的，缓存会污染不同用户的状态）
+        if (import.meta.client && initialized.value) return
         initialized.value = true
         try {
-            const data = await $fetch<{ user: AuthUser }>('/api/auth/me')
+            // SSR 时需要将浏览器传来的 Cookie 转发给内部 API
+            // 否则服务端的 $fetch 是一个新请求，不携带任何 Cookie
+            const headers = import.meta.server
+                ? useRequestHeaders(['cookie'])
+                : undefined
+            const data = await $fetch<{ user: AuthUser }>('/api/auth/me', { headers })
             user.value = data.user
         }
         catch {
